@@ -62,7 +62,7 @@ export function AgeTable({ title, data, loading, color }) {
                                                 </td>
                                                 <td className={className}>
                                                     <div className="flex items-center gap-4">
-                                                        <Avatar src={"./img/user.png"} alt={name} size="sm" variant="rounded" />
+                                                        <Avatar src={"https://github.com/CloverSoftwareWeb/KK/blob/main/img/user.png?raw=true"} alt={name} size="sm" variant="rounded" />
                                                         <div>
                                                             <Typography
                                                                 variant="small"

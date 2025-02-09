@@ -99,7 +99,7 @@ export function Sidenav({ brandName, routes }) {
 }
 
 Sidenav.defaultProps = {
-  brandImg: "/img/logo-ct.png",
+  brandImg: "https://github.com/CloverSoftwareWeb/KK/blob/main/img/logo-ct.png?raw=true",
   brandName: "Kooli Karmika",
 };
 

@@ -27,7 +27,7 @@ export function Dashboard() {
       <Sidenav
         routes={routes}
         brandImg={
-          sidenavType === "dark" ? "./img/logo-ct.png" : "./img/logo-ct-dark.png"
+          sidenavType === "dark" ? "https://github.com/CloverSoftwareWeb/KK/blob/main/img/logo-ct.png?raw=true" : "https://github.com/CloverSoftwareWeb/KK/blob/main/img/logo-ct-dark.png?raw=true"
         }
       />
       <div className="p-4 xl:ml-80">
