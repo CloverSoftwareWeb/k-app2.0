@@ -58,7 +58,7 @@ export function SignUp() {
 
   // Handle input change
   const handleChange = (e) => {
-    dispatch({ type: "UPDATE_FIELD", field: e.target.name, value: e.target.value });
+    dispatch({ type: "UPDATE_FIELD", field: e.target.name, value: e.target.value.toUpperCase() });
   };
 
   // Reset form

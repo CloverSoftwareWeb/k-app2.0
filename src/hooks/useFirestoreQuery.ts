@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, endAt, getDoc, getDocs, onSnapshot, orderBy, query, startAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const useFirestoreQuery = (collectionName) => {
@@ -56,6 +56,26 @@ export const useFirestoreQuery = (collectionName) => {
     }
   };
 
+  const searchDocuments = async (fieldName, searchValue) => {
+    try {
+      const q = query(
+        collection(db, collectionName),
+        orderBy(fieldName), 
+        startAt(searchValue),
+        endAt(searchValue + "\uf8ff")
+      );
+      const snapshot = await getDocs(q);
+      const results = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      return { success: true, data: results };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
 //   const deleteDucumentField = async (collectionName) => {
 //     const snapshot = await getDocs(collection(db, collectionName));
 
@@ -67,5 +87,5 @@ export const useFirestoreQuery = (collectionName) => {
 //     });
 //   };
 
-  return { addNewDocument, getAllData, getDocumentById, updateFieldById };
+  return { addNewDocument, getAllData, getDocumentById, updateFieldById, searchDocuments };
 };

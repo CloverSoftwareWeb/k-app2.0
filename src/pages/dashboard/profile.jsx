@@ -13,6 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useFirestoreQuery } from "../../hooks/useFirestoreQuery";
+import CallTo from "@/widgets/table/components/call_to";
 
 export function Profile() {
   const { userId } = useParams();
@@ -47,7 +48,7 @@ export function Profile() {
   const handleBlur = () => {
     setUserData(updatedData);
     updateFieldById(userId, updatedData)
-    setIsEditing(false); 
+    setIsEditing(false);
   };
 
   return (
@@ -67,9 +68,9 @@ export function Profile() {
                 className="rounded-lg shadow-lg shadow-blue-gray-500/40"
               />
               <div>
-                  <Typography variant="h5" color="blue-gray" className="mb-1">
-                    {userData?.name}
-                  </Typography>
+                <Typography variant="h5" color="blue-gray" className="mb-1">
+                  {userData?.name}
+                </Typography>
                 {isEditing ? (
                   <Input
                     value={updatedData.workType}
@@ -128,7 +129,17 @@ export function Profile() {
                     onBlur={handleBlur}
                   />
                 ) : (
-                  userData?.phoneNo
+                  <>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-medium"
+                    >
+
+                      {userData?.phoneNo}
+                    </Typography>
+                    <CallTo phone={userData?.phoneNo} name={userData?.name} />
+                  </>
                 ),
                 "CR Number": isEditing ? (
                   <Input

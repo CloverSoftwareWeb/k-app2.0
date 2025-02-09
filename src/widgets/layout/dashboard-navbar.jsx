@@ -1,36 +1,39 @@
-import { useLocation, Link } from "react-router-dom";
 import {
-  Navbar,
-  Typography,
+  setOpenConfigurator,
+  setOpenSidenav,
+  useMaterialTailwindController,
+} from "@/context";
+import {
+  Bars3Icon,
+  ClockIcon,
+  Cog6ToothIcon,
+  UserCircleIcon
+} from "@heroicons/react/24/solid";
+import {
+  Avatar,
+  Breadcrumbs,
   Button,
   IconButton,
-  Breadcrumbs,
   Input,
   Menu,
   MenuHandler,
-  MenuList,
   MenuItem,
-  Avatar,
+  MenuList,
+  Navbar,
+  Typography,
 } from "@material-tailwind/react";
-import {
-  UserCircleIcon,
-  Cog6ToothIcon,
-  BellIcon,
-  ClockIcon,
-  CreditCardIcon,
-  Bars3Icon,
-} from "@heroicons/react/24/solid";
-import {
-  useMaterialTailwindController,
-  setOpenConfigurator,
-  setOpenSidenav,
-} from "@/context";
-import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
+import { Common } from "@/constant/strings";
 
 
 export function DashboardNavbar() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
@@ -38,6 +41,30 @@ export function DashboardNavbar() {
 
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
+
+  const { searchDocuments } = useFirestoreQuery(Common.collectionName.customerData);
+
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    const result = await searchDocuments("name", searchQuery.toLocaleUpperCase());
+
+    if (result.success) {
+      setSearchResults(result.data);
+      setShowResults(true);
+    } else {
+      setSearchResults([]);
+      setShowResults(false);
+    }
+  };
+
+  const handleSearchAbort = () => {
+    setTimeout(() => {
+      setSearchResults([]);
+      setShowResults(false)
+    }, 200);
+  }
 
 
   const handSignOut = () => {
@@ -48,20 +75,18 @@ export function DashboardNavbar() {
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
-      className={`rounded-xl transition-all ${
-        fixedNavbar
+      className={`rounded-xl transition-all ${fixedNavbar
           ? "sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
           : "px-0 py-1"
-      }`}
+        }`}
       fullWidth
       blurred={fixedNavbar}
     >
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
         <div className="capitalize">
           <Breadcrumbs
-            className={`bg-transparent p-0 transition-all ${
-              fixedNavbar ? "mt-1" : ""
-            }`}
+            className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1" : ""
+              }`}
           >
             <Link to={`/${layout}`}>
               <Typography
@@ -86,7 +111,35 @@ export function DashboardNavbar() {
         </div>
         <div className="flex items-center">
           <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Search" />
+            <Input
+              label="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onBlur={handleSearchAbort}
+            />
+
+            {/* Search Results Dropdown */}
+            {showResults && searchResults.length > 0 && (
+              <div className="absolute w-100 mt-1 bg-white shadow-lg rounded-lg max-h-60 overflow-auto z-50">
+                {searchResults.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+                    onClick={() => navigate(`/profile/${item.id}`)} // Navigate to a details page
+                  >
+                    <Typography variant="small" className="text-gray-700">{item.name}</Typography>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* No Results Found */}
+            {showResults && searchResults.length === 0 && (
+              <div className="absolute w-full mt-1 bg-white shadow-lg rounded-lg p-2 text-gray-500 z-50">
+                No results found.
+              </div>
+            )}
           </div>
           <IconButton
             variant="text"
@@ -99,21 +152,21 @@ export function DashboardNavbar() {
           <Menu>
             <MenuHandler>
               <div>
-              <Button
-              variant="text"
-              color="blue-gray"
-              className="hidden items-center gap-1 px-4 xl:flex normal-case"
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              Admin
-            </Button>
-            <IconButton
-              variant="text"
-              color="blue-gray"
-              className="grid xl:hidden"
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-            </IconButton>
+                <Button
+                  variant="text"
+                  color="blue-gray"
+                  className="hidden items-center gap-1 px-4 xl:flex normal-case"
+                >
+                  <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
+                  Admin
+                </Button>
+                <IconButton
+                  variant="text"
+                  color="blue-gray"
+                  className="grid xl:hidden"
+                >
+                  <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
+                </IconButton>
               </div>
             </MenuHandler>
             <MenuList className="w-max border-0">
