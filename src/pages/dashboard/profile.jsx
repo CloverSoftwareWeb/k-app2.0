@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useFirestoreQuery } from "../../hooks/useFirestoreQuery";
 import CallTo from "@/widgets/table/components/call_to";
+import SmsTo from "@/widgets/table/components/sms_to";
 
 export function Profile() {
   const { userId } = useParams();
@@ -139,6 +140,7 @@ export function Profile() {
                       {userData?.phoneNo}
                     </Typography>
                     <CallTo phone={userData?.phoneNo} name={userData?.name} />
+                    <SmsTo phone={userData?.phoneNo} date={userData?.expireDate} />
                   </>
                 ),
                 "CR Number": isEditing ? (

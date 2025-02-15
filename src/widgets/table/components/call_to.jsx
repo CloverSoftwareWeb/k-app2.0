@@ -19,7 +19,7 @@ function CallTo({ phone, name }) {
     }
     return (
         <div>
-            <Typography className="text-xs font-semibold text-blue-gray-600">
+            <Typography className="text-xs font-semibold text-green-600">
                 <a href={`tel:${phone}`} onClick={addHistory}>Call</a>
             </Typography>
         </div>

@@ -11,6 +11,7 @@ import Cell from "./components/cell";
 import Header from "./components/header"
 import ShowMore from "./components/show_more";
 import CallTo from "./components/call_to"
+import SmsTo from "./components/sms_to";
 
 export function DateTable({ title, data, loading, color, displayRow }) {
   // State to manage how many rows to show initially
@@ -37,7 +38,7 @@ export function DateTable({ title, data, loading, color, displayRow }) {
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["", "name", "cr no.", "expire", "mobile", ""].map((el) => (
+                    {["", "name", "cr no.", "expire", "mobile", "", ""].map((el) => (
                       <Header el={el} />
                     ))}
                   </tr>
@@ -80,6 +81,9 @@ export function DateTable({ title, data, loading, color, displayRow }) {
                           </td>
                           <td className={className}>
                             <CallTo phone={phoneNo} name={name} />
+                          </td>
+                          <td className={className}>
+                            <SmsTo phone={phoneNo} date={expireDate} />
                           </td>
                         </tr>
                       );

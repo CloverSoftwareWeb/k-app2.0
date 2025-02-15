@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
@@ -9,17 +9,16 @@ import {
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
-  const { isAuthenticated } = useContext(AuthContext);
   
-  const PrivateRoute = ({ element }) => {
-    return isAuthenticated ? element : <Navigate to="/auth/sign-in" replace />;
-  };
+  function PrivateRoute({ element }) {
+    const storedValue = localStorage.getItem("isAuthenticated")
+    return storedValue === "true" ? element : <Navigate to="/auth/sign-in" replace />;
+  }
   
 
   return (

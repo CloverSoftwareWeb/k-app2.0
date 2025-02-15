@@ -1,20 +1,21 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Dashboard, Auth } from "@/layouts";
-import { useContext } from "react";
-import { AuthProvider, AuthContext } from './context/AuthContext'
 import { UserDataProvider } from './context/UserDataContext'
 import { StatisticsProvider } from './context/StatisticsContext'
 import { CallHistoryProvider } from './context/CallHistoryContext'
 import { Common } from "./constant/strings";
 
-function PrivateRoute({ element }) {
-  const { isAuthenticated } = useContext(AuthContext);
-  return isAuthenticated ? element : <Navigate to="/auth/sign-in" replace />;
-}
+
 
 function App() {
+
+  function PrivateRoute({ element }) {
+    const storedValue = localStorage.getItem("isAuthenticated")
+    return storedValue === "true" ? element : <Navigate to="/auth/sign-in" replace />;
+  }
+
+  
   return (
-    <AuthProvider>
       <UserDataProvider collectionName={Common.collectionName.customerData}>
         <CallHistoryProvider >
           <StatisticsProvider>
@@ -26,7 +27,6 @@ function App() {
           </StatisticsProvider>
         </CallHistoryProvider>
       </UserDataProvider>
-    </AuthProvider>
   );
 }
 

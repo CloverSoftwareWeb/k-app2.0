@@ -12,6 +12,7 @@ import Header from "./components/header"
 import ShowMore from "./components/show_more";
 import CallTo from "./components/call_to";
 import { useDate } from '../../hooks/useDate'
+import SmsTo from "./components/sms_to";
 
 
 export function AgeTable({ title, data, loading, color }) {
@@ -39,64 +40,67 @@ export function AgeTable({ title, data, loading, color }) {
                     {loading ? <Loader />
                         :
                         data.length > 0 ?
-                        <table className="w-full min-w-[640px] table-auto">
-                            <thead>
-                                <tr>
-                                    {["", "name", "cr no.", "age", "mobile", ""].map((el) => (
-                                        <Header el={el} />
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data?.slice(0, visibleRows).map(
-                                    ({ name, crNo, dob, phoneNo }, key) => {
-                                        const className = `py-3 px-5 ${key === data.length - 1
-                                            ? ""
-                                            : "border-b border-blue-gray-50"
-                                            }`;
+                            <table className="w-full min-w-[640px] table-auto">
+                                <thead>
+                                    <tr>
+                                        {["", "name", "cr no.", "age", "mobile", "", ""].map((el) => (
+                                            <Header el={el} />
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data?.slice(0, visibleRows).map(
+                                        ({ name, crNo, dob, phoneNo, expireDate }, key) => {
+                                            const className = `py-3 px-5 ${key === data.length - 1
+                                                ? ""
+                                                : "border-b border-blue-gray-50"
+                                                }`;
 
-                                        return (
-                                            <tr key={name}>
-                                                <td className={className}>
-                                                    <Cell entity={key + 1} />
-                                                </td>
-                                                <td className={className}>
-                                                    <div className="flex items-center gap-4">
-                                                        <Avatar src={"https://github.com/CloverSoftwareWeb/KK/blob/main/img/user.png?raw=true"} alt={name} size="sm" variant="rounded" />
-                                                        <div>
-                                                            <Typography
-                                                                variant="small"
-                                                                color="blue-gray"
-                                                                className="font-semibold"
-                                                            >
-                                                                {name}
-                                                            </Typography>
+                                            return (
+                                                <tr key={name}>
+                                                    <td className={className}>
+                                                        <Cell entity={key + 1} />
+                                                    </td>
+                                                    <td className={className}>
+                                                        <div className="flex items-center gap-4">
+                                                            <Avatar src={"https://github.com/CloverSoftwareWeb/KK/blob/main/img/user.png?raw=true"} alt={name} size="sm" variant="rounded" />
+                                                            <div>
+                                                                <Typography
+                                                                    variant="small"
+                                                                    color="blue-gray"
+                                                                    className="font-semibold"
+                                                                >
+                                                                    {name}
+                                                                </Typography>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className={className}>
-                                                    <Cell entity={crNo} />
-                                                </td>
-                                                <td className={className}>
-                                                    <Cell entity={calculateAge(dob)} />
-                                                </td>
-                                                <td className={className}>
-                                                    <Cell entity={phoneNo} />
-                                                </td>
-                                                <td className={className}>
-                                                    <CallTo phone={phoneNo} name={name} />
-                                                </td>
-                                            </tr>
-                                        );
-                                    }
-                                )}
-                            </tbody>
-                        </table>
-                        :  <div className="mt-4 text-center">
-                            <Typography variant="h6" color="gray">
-                               No data found
-                            </Typography>
-                    </div>
+                                                    </td>
+                                                    <td className={className}>
+                                                        <Cell entity={crNo} />
+                                                    </td>
+                                                    <td className={className}>
+                                                        <Cell entity={calculateAge(dob)} />
+                                                    </td>
+                                                    <td className={className}>
+                                                        <Cell entity={phoneNo} />
+                                                    </td>
+                                                    <td className={className}>
+                                                        <CallTo phone={phoneNo} name={name} />
+                                                    </td>
+                                                    <td className={className}>
+                                                        <SmsTo phone={phoneNo} date={expireDate} />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+                                    )}
+                                </tbody>
+                            </table>
+                            : <div className="mt-4 text-center">
+                                <Typography variant="h6" color="gray">
+                                    No data found
+                                </Typography>
+                            </div>
                     }
 
                     {/* Show More button */}
