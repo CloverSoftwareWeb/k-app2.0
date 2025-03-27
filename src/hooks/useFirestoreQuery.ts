@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, endAt, getDoc, getDocs, onSnapshot, orderBy, query, startAt, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, doc, deleteDoc, endAt, getDoc, getDocs, onSnapshot, orderBy, query, startAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const useFirestoreQuery = (collectionName) => {
@@ -7,8 +7,7 @@ export const useFirestoreQuery = (collectionName) => {
     try {
       await addDoc(collection(db, collectionName), {
         ...newData
-      })
-      
+      });
       return { success: true, message: "added new data" };
     } catch (err) {
       return { success: false, error: err.message };
@@ -20,10 +19,10 @@ export const useFirestoreQuery = (collectionName) => {
     const documents = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }))
+    }));
 
-    return documents
-  }
+    return documents;
+  };
 
   const getDocumentById = (docId, callback) => {
     try {
@@ -44,8 +43,8 @@ export const useFirestoreQuery = (collectionName) => {
     }
   };
 
-   // Update a specific field in a document by ID
-   const updateFieldById = async (docId, updatedData) => {
+  // Update a specific field in a document by ID
+  const updateFieldById = async (docId, updatedData) => {
     try {
       const docRef = doc(db, collectionName, docId);
       await updateDoc(docRef, updatedData);
@@ -76,16 +75,16 @@ export const useFirestoreQuery = (collectionName) => {
     }
   };
 
-//   const deleteDucumentField = async (collectionName) => {
-//     const snapshot = await getDocs(collection(db, collectionName));
+  // Delete a document by ID
+  const deleteDocumentById = async (docId) => {
+    try {
+      const docRef = doc(db, collectionName, docId);
+      await deleteDoc(docRef);  // Deletes the document from Firestore
+      return { success: true, message: 'Document deleted successfully' };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
 
-//     snapshot.forEach(async (document) => {
-//       const docRef = doc(db, collectionName, document.id);
-//       await updateDoc(docRef, {
-//         id: deleteField() // This removes the field
-//       });
-//     });
-//   };
-
-  return { addNewDocument, getAllData, getDocumentById, updateFieldById, searchDocuments };
+  return { addNewDocument, getAllData, getDocumentById, updateFieldById, searchDocuments, deleteDocumentById };
 };

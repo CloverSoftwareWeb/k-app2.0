@@ -1,6 +1,6 @@
 import { Common } from "@/constant/strings";
 import { ProfileInfoCard } from "@/widgets/cards";
-import { PencilIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid"; // Added TrashIcon
 import {
   Avatar,
   Card,
@@ -11,7 +11,7 @@ import {
   Button
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFirestoreQuery } from "../../hooks/useFirestoreQuery";
 import CallTo from "@/widgets/table/components/call_to";
 import SmsTo from "@/widgets/table/components/sms_to";
@@ -19,11 +19,13 @@ import SmsTo from "@/widgets/table/components/sms_to";
 export function Profile() {
   const { userId } = useParams();
   // collection name should be same as per user context 
-  const { getDocumentById, updateFieldById } = useFirestoreQuery(Common.collectionName.customerData);
+  const { getDocumentById, updateFieldById, deleteDocumentById } = useFirestoreQuery(Common.collectionName.customerData);
 
   const [userData, setUserData] = useState({});
   const [updatedData, setUpdatedData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = getDocumentById(userId, (result) => {
@@ -50,6 +52,24 @@ export function Profile() {
     setUserData(updatedData);
     updateFieldById(userId, updatedData)
     setIsEditing(false);
+  };
+
+  // Delete confirmation handler
+  const handleDelete = () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this profile?");
+    if (confirmDelete) {
+      // Add delete logic here, e.g., call deleteDocumentById
+      deleteDocumentById(userId)
+        .then(() => {
+          navigate('/dashboard/manage')
+          setTimeout(() => {
+            alert("Profile deleted successfully! Please refresh now.");  
+          }, 1200)
+        })
+        .catch((error) => {
+          alert("Failed to delete profile! Please try again.");
+        });
+    }
   };
 
   return (
@@ -85,9 +105,15 @@ export function Profile() {
                 )}
               </div>
             </div>
-            <Tooltip content="Edit Profile">
-              <PencilIcon className="h-5 w-5 cursor-pointer text-blue-gray-500" onClick={handleEdit} />
-            </Tooltip>
+            <div className="flex gap-4">
+              <Tooltip content="Edit Profile">
+                <PencilIcon className="h-5 w-5 cursor-pointer text-blue-gray-500" onClick={handleEdit} />
+              </Tooltip>
+              {/* Delete Button */}
+              <Tooltip content="Delete Profile">
+                <TrashIcon className="h-5 w-5 cursor-pointer text-red-500" onClick={handleDelete} />
+              </Tooltip>
+            </div>
           </div>
 
           <div className="grid-cols-1 mb-12 grid gap-12 px-5 xl:grid-cols-2">
@@ -136,7 +162,6 @@ export function Profile() {
                       color="blue-gray"
                       className="font-medium"
                     >
-
                       {userData?.phoneNo}
                     </Typography>
                     <CallTo phone={userData?.phoneNo} name={userData?.name} />
