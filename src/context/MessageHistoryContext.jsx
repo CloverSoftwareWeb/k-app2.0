@@ -34,8 +34,24 @@ export const MessageHistoryProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (messageData.length >= 0) {
-      updateFieldById(Common.documentIds.statistics, { messageCount: messageData.length });
+    // compute message count for current month
+    try {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const monthlyMessages = messageData.filter((m) => {
+        try {
+          const d = parse(m.timeline, "dd/MM/yyyy hh:mm:ss a", date);
+          return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      updateFieldById(Common.documentIds.statistics, { messageCount: monthlyMessages.length });
+    } catch (err) {
+      console.error("Failed to compute monthly message count:", err);
     }
   }, [messageData]);
 

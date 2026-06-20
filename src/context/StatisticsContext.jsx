@@ -21,10 +21,35 @@ export const StatisticsProvider = ({ children }) => {
 
   const { getDocumentById } = useFirestoreQuery(Common.collectionName.statistics);
 
+  // Use updateFieldById to reset monthly counters when required
+  const { updateFieldById } = useFirestoreQuery(Common.collectionName.statistics);
+
   useEffect(() => {
     const unsubscribe = getDocumentById(Common.documentIds.statistics, (result) => {
       if (result.success) {
-        setUserStatData(result.data);
+        const data = result.data || {};
+        setUserStatData(data);
+
+        try {
+          // Check monthly reset
+          const now = new Date();
+          // use YYYY-MM format to detect month changes
+          const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+          const lastReset = data.lastResetMonth || null;
+
+          if (lastReset !== currentMonth) {
+            // Reset messageCount and callCount to 0 and update lastResetMonth
+            updateFieldById(Common.documentIds.statistics, {
+              messageCount: 0,
+              callCount: 0,
+              lastResetMonth: currentMonth,
+            }).then((res) => {
+              if (!res.success) console.error("Failed to reset monthly counters:", res.error);
+            }).catch((err) => console.error(err));
+          }
+        } catch (err) {
+          console.error("Monthly reset check failed:", err);
+        }
       } else {
         console.error("Error:", result.error);
       }
@@ -41,14 +66,14 @@ export const StatisticsProvider = ({ children }) => {
       value: userStatData?.totalUser,
       footer: {
         color: "text-green-500",
-        value: "+3%",
-        label: "than last month",
+        value: `${userStatData?.totalUser ?? 0} members`,
+        label: "",
       },
     },
     {
       color: "gray",
       icon: ChatBubbleLeftIcon,
-      title: "Message Count",
+      title: "Message Count/Month",
       value: userStatData?.messageCount ?? 0,
       footer: {
         color: "text-red-500",
@@ -70,12 +95,12 @@ export const StatisticsProvider = ({ children }) => {
     {
       color: "gray",
       icon: DevicePhoneMobileIcon,
-      title: "Call Count",
+      title: "Call Count/Month",
       value: userStatData?.callCount,
       footer: {
         color: "text-green-500",
-        value: "+55%",
-        label: "than last week",
+        value: "Call triggered from Phone",
+        label: "",
       },
     },
   ];

@@ -123,7 +123,7 @@ export function Home() {
             floated={false}
             shadow={false}
             color="transparent"
-            className="m-0 flex items-center justify-between p-6"
+            className="m-0 flex items-center justify-between p-4"
           >
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-1">
@@ -131,15 +131,15 @@ export function Home() {
               </Typography>
             </div>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-            <table className="w-full min-w-[640px] table-auto">
+          <CardBody className="overflow-x-auto px-2 pt-0 pb-2">
+            <table className="w-full min-w-[480px] table-auto">
               <thead>
                 <tr>
                   {["role", "count"].map(
                     (el) => (
                       <th
                         key={el}
-                        className="border-b border-blue-gray-50 py-3 px-6 text-left"
+                        className="border-b border-blue-gray-50 py-2 px-4 text-left"
                       >
                         <Typography
                           variant="small"
@@ -155,7 +155,7 @@ export function Home() {
               <tbody>
                 {roleCounts.length === 0 ? (
                   <tr>
-                    <td colSpan={2} className="py-6 px-6">
+                    <td colSpan={2} className="py-4 px-4">
                       <Typography variant="small" className="text-blue-gray-500">
                         No member data available.
                       </Typography>
@@ -163,7 +163,7 @@ export function Home() {
                   </tr>
                 ) : (
                   roleCounts.map(({ role, count }, key) => {
-                    const className = `py-3 px-5 ${
+                    const className = `py-2 px-4 ${
                       key === roleCounts.length - 1
                         ? ""
                         : "border-b border-blue-gray-50"

@@ -33,10 +33,25 @@ export const CallHistoryProvider = ({ children }) => {
     }, []); // Re-fetch data only when collection changes
 
     useEffect(() => {
-        if (callData.length > 0) {
-            updateFieldById(Common.documentIds.statistics, { callCount: callData.length });
+        try {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            const monthlyCalls = callData.filter((c) => {
+                try {
+                    const d = parse(c.timeline, "dd/MM/yyyy hh:mm:ss a", date);
+                    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                } catch (e) {
+                    return false;
+                }
+            });
+
+            updateFieldById(Common.documentIds.statistics, { callCount: monthlyCalls.length });
+        } catch (err) {
+            console.error("Failed to compute monthly call count:", err);
         }
-    }, [callData]); // Runs only when userData updates
+    }, [callData]); // Runs only when callData updates
 
     return (
         <CallHistoryContext.Provider value={{ callData, loading, error }}>
