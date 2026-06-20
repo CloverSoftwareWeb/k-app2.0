@@ -19,7 +19,7 @@ import SmsTo from "@/widgets/table/components/sms_to";
 export function Profile() {
   const { userId } = useParams();
   // collection name should be same as per user context 
-  const { getDocumentById, updateFieldById, deleteDocumentById } = useFirestoreQuery(Common.collectionName.customerData);
+  const { getAllData, updateFieldById, deleteDocumentById } = useFirestoreQuery(Common.collectionName.customerData);
 
   const [userData, setUserData] = useState({});
   const [updatedData, setUpdatedData] = useState({});
@@ -30,23 +30,23 @@ export function Profile() {
   useEffect(() => {
     if (!userId) return;
 
-    const unsubscribe = getDocumentById(userId, (result) => {
-      console.log("Fetched user data:", result);
-      if (result.success) {
-        setUserData(result.data);
-        setUpdatedData(result.data);
-      } else {
-        console.error("Error:", result.error);
-      }
-    });
-
-    return () => {
+    const fetchUserData = async () => {
       try {
-        if (typeof unsubscribe === "function") unsubscribe();
+        const allUsers = await getAllData();
+        const user = allUsers.find(u => u.id === userId);
+        if (user) {
+          console.log("Fetched user data:", user);
+          setUserData(user);
+          setUpdatedData(user);
+        } else {
+          console.error("User not found:", userId);
+        }
       } catch (err) {
-        // ignore
+        console.error("Error fetching user:", err);
       }
     };
+
+    fetchUserData();
   }, [userId]);
 
   const handleEdit = () => {

@@ -17,6 +17,17 @@ const firebaseConfig = {
   measurementId: "G-8MX4QDNMR6"
 };
 
+// testing project config - do not use
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAEh3qEZJ-RLLY-N5pZCj5udu4c0zzN1bk",
+//   authDomain: "k-app-332d2.firebaseapp.com",
+//   projectId: "k-app-332d2",
+//   storageBucket: "k-app-332d2.firebasestorage.app",
+//   messagingSenderId: "370623465586",
+//   appId: "1:370623465586:web:4f3c21f1e9a203da205aeb"
+// };
+
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
