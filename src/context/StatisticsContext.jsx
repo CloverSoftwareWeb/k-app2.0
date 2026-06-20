@@ -55,7 +55,13 @@ export const StatisticsProvider = ({ children }) => {
       }
     });
 
-    return () => unsubscribe;
+    return () => {
+      try {
+        if (typeof unsubscribe === "function") unsubscribe();
+      } catch (err) {
+        // ignore
+      }
+    };
   }, []);
 
   const statisticsCardsData = [

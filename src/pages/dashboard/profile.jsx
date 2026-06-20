@@ -12,7 +12,7 @@ import {
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useFirestoreQuery } from "../../hooks/useFirestoreQuery";
+import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
 import CallTo from "@/widgets/table/components/call_to";
 import SmsTo from "@/widgets/table/components/sms_to";
 
@@ -28,17 +28,26 @@ export function Profile() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!userId) return;
+
     const unsubscribe = getDocumentById(userId, (result) => {
+      console.log("Fetched user data:", result);
       if (result.success) {
         setUserData(result.data);
         setUpdatedData(result.data);
       } else {
         console.error("Error:", result.error);
       }
-    })
+    });
 
-    return () => unsubscribe
-  }, []);
+    return () => {
+      try {
+        if (typeof unsubscribe === "function") unsubscribe();
+      } catch (err) {
+        // ignore
+      }
+    };
+  }, [userId]);
 
   const handleEdit = () => {
     setIsEditing(!isEditing);

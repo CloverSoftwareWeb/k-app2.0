@@ -25,21 +25,27 @@ export const useFirestoreQuery = (collectionName) => {
   };
 
   const getDocumentById = (docId, callback) => {
+    // Validate callback
+    const safeCallback = typeof callback === 'function' ? callback : () => {};
+
     try {
       const docRef = doc(db, collectionName, docId);
-  
+
       const unsubscribe = onSnapshot(docRef, (snapshot) => {
-        if (snapshot.exists()) {
-          callback({ success: true, data: snapshot.data() });
+        if (snapshot && snapshot.exists && snapshot.exists()) {
+          safeCallback({ success: true, data: snapshot.data() });
         } else {
-          callback({ success: false, error: "Document not found" });
+          safeCallback({ success: false, error: "Document not found" });
         }
+      }, (error) => {
+        safeCallback({ success: false, error: (error && error.message) || String(error) });
       });
-  
+
       // Return the unsubscribe function to stop listening when needed
-      return unsubscribe;
+      return typeof unsubscribe === 'function' ? unsubscribe : () => {};
     } catch (err) {
-      callback({ success: false, error: err.message });
+      safeCallback({ success: false, error: (err && err.message) || String(err) });
+      return () => {};
     }
   };
 
