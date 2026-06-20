@@ -45,7 +45,7 @@ export function Navbar({ brandName, routes, action }) {
   return (
     <MTNavbar className="p-3">
       <div className="container mx-auto flex items-center justify-between text-blue-gray-900">
-        <Link to="/">
+        <Link to="/dashboard/home">
           <Typography
             variant="small"
             className="mr-4 ml-2 cursor-pointer py-1.5 font-bold"
@@ -84,16 +84,7 @@ export function Navbar({ brandName, routes, action }) {
 
 Navbar.defaultProps = {
   brandName: "Kooli Karmika",
-  action: (
-    <a
-      href="https://www.creative-tim.com/product/material-tailwind-dashboard-react"
-      target="_blank"
-    >
-      <Button variant="gradient" size="sm" fullWidth>
-        free download
-      </Button>
-    </a>
-  ),
+  action: (<></>),
 };
 
 Navbar.propTypes = {

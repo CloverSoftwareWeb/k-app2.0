@@ -37,7 +37,7 @@ export const StatisticsProvider = ({ children }) => {
     {
       color: "gray",
       icon: UsersIcon,
-      title: "Total Members",
+      title: "Total Member's",
       value: userStatData?.totalUser,
       footer: {
         color: "text-green-500",

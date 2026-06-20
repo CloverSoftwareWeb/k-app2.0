@@ -13,7 +13,7 @@ export function Manage() {
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
-      <CustomerTable title={'Member Table'} data={sortedData} loading={loading} color={'gray'} displayRow={5}/>
+      <CustomerTable title={"Member's Table"} data={sortedData} loading={loading} color={'gray'} displayRow={5}/>
     </div>
   );
 }

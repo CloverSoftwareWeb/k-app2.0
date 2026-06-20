@@ -38,20 +38,20 @@ export const routes = [
       },
       {
         icon: <CommandLineIcon {...icon} />,
-        name: "manage",
+        name: "manage member's",
         path: "/manage",
         element: <Manage />,
       },
       {
         icon: <InformationCircleIcon {...icon} />,
-        name: "notifications",
-        path: "/notifications",
+        name: "todo",
+        path: "/todo",
         element: <Notifications />,
       },
     ],
   },
   {
-    title: "auth pages",
+    title: "register",
     layout: "auth",
     pages: [
       {
@@ -62,7 +62,7 @@ export const routes = [
       },
       {
         icon: <RectangleStackIcon {...icon} />,
-        name: "register",
+        name: "add new member ",
         path: "/sign-up",
         element: <SignUp />,
       },

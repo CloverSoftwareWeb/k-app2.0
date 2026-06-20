@@ -24,7 +24,7 @@ export function Tables() {
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <DateTable title={'Upcoming Renewal Card Table '} data={upcomingRenewalData} loading={loading} color={'orange'} displayRow={3} />
-      <DateTable title={'Lapse Table '} data={lapseData} loading={loading} color={'red'} displayRow={3}/>
+      <DateTable title={'Expired Card Table '} data={lapseData} loading={loading} color={'red'} displayRow={3}/>
       <AgeTable title={'Senior Citizen Table '} data={seniorCitizen} loading={loading} color={'blue'} displayRow={3}/>
     </div>
   );
