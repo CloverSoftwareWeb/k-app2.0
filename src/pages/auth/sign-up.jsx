@@ -25,6 +25,7 @@ const initialState = {
   workType: "",
   phoneNo: "",
   address: "",
+  aadharNo: "",
 };
 
 // Reducer function to handle state updates
@@ -135,6 +136,11 @@ export function SignUp() {
           <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Mobile</Typography>
           <Input type="tel" size="lg" name="phoneNo" placeholder="Enter mobile number" 
             value={state.phoneNo} onChange={handleChange} required/>
+
+          {/* Aadhar Number */}
+          <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Aadhar Number (Optional)</Typography>
+          <Input type="text" size="lg" name="aadharNo" placeholder="Enter Aadhar number" 
+            value={state.aadharNo} onChange={handleChange} />
 
           {/* Address */}
           <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Address</Typography>

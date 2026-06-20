@@ -11,25 +11,20 @@ import React, { useState } from 'react'
 import Cell from "./components/cell";
 import Header from "./components/header"
 import ShowMore from "./components/show_more";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 
 export function CustomerTable({ title, data, loading, color, displayRow }) {
-  // State to manage how many rows to show initially
   const [visibleRows, setVisibleRows] = useState(displayRow);
   const navigate = useNavigate();
 
-  // Show more rows
   const handleShowMore = () => {
-    setVisibleRows(data?.length); // Show all rows when "Show More" is clicked
+    setVisibleRows(data?.length);
   };
 
   const goToProfile = ({ userId }) => {
-    navigate(`/profile/${userId}`);
+    navigate(`/dashboard/profile/${userId}`);
   };
-
-
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -45,8 +40,8 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["name", "cr no.", "card expire", "mobile", ""].map((el) => (
-                      <Header el={el} />
+                    {["sl", "name", "cr no.", "card expire", "mobile", ""].map((el) => (
+                      <Header key={el} el={el} />
                     ))}
                   </tr>
                 </thead>
@@ -59,7 +54,10 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
                         }`;
 
                       return (
-                        <tr key={name}>
+                        <tr key={id}>
+                          <td className={className}>
+                            <Cell entity={key + 1} />
+                          </td>
                           <td className={className}>
                             <div className="flex items-center gap-4">
                               <Avatar src={"https://github.com/CloverSoftwareWeb/KK/blob/main/img/user.png?raw=true"} alt={name} size="sm" variant="rounded" />
@@ -102,7 +100,6 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
               </table>
           }
 
-          {/* Show More button */}
           <ShowMore data={data} visibleRows={visibleRows} handleShowMore={handleShowMore} />
         </CardBody>
       </Card>

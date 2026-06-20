@@ -14,6 +14,7 @@ function CallTo({ phone, name }) {
     const addHistory = () => {
         addNewDocument({
             name: name,
+            phoneNo: phone,
             timeline: getCurrentDataAndTime()
         })
     }

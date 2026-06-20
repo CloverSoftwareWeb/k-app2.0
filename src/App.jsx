@@ -3,6 +3,7 @@ import { Dashboard, Auth } from "@/layouts";
 import { UserDataProvider } from './context/UserDataContext'
 import { StatisticsProvider } from './context/StatisticsContext'
 import { CallHistoryProvider } from './context/CallHistoryContext'
+import { MessageHistoryProvider } from './context/MessageHistoryContext'
 import { Common } from "./constant/strings";
 
 
@@ -18,6 +19,7 @@ function App() {
   return (
       <UserDataProvider collectionName={Common.collectionName.customerData}>
         <CallHistoryProvider >
+          <MessageHistoryProvider>
           <StatisticsProvider>
             <Routes>
               <Route path="/dashboard/*" element={<PrivateRoute element={<Dashboard />} />} />
@@ -25,6 +27,7 @@ function App() {
               <Route path="*" element={<PrivateRoute element={<Dashboard />} />} />
             </Routes>
           </StatisticsProvider>
+          </MessageHistoryProvider>
         </CallHistoryProvider>
       </UserDataProvider>
   );

@@ -43,21 +43,23 @@ export function AgeTable({ title, data, loading, color }) {
                             <table className="w-full min-w-[640px] table-auto">
                                 <thead>
                                     <tr>
-                                        {["", "name", "cr no.", "age", "mobile", "", ""].map((el) => (
-                                            <Header el={el} />
+                                        {["", "name", "cr no.", "age", "mobile", "", ""].map((el, idx) => (
+                                            <Header key={`age-header-${idx}`} el={el} />
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {data?.slice(0, visibleRows).map(
-                                        ({ name, crNo, dob, phoneNo, expireDate }, key) => {
+                                        ({ name, crNo, dob, phoneNo, expireDate, id }, key) => {
                                             const className = `py-3 px-5 ${key === data.length - 1
                                                 ? ""
                                                 : "border-b border-blue-gray-50"
                                                 }`;
 
+                                            const rowKey = id ?? `${name ?? "row"}-${key}`;
+
                                             return (
-                                                <tr key={name}>
+                                                <tr key={rowKey}>
                                                     <td className={className}>
                                                         <Cell entity={key + 1} />
                                                     </td>
@@ -88,7 +90,7 @@ export function AgeTable({ title, data, loading, color }) {
                                                         <CallTo phone={phoneNo} name={name} />
                                                     </td>
                                                     <td className={className}>
-                                                        <SmsTo phone={phoneNo} date={expireDate} />
+                                                        <SmsTo phone={phoneNo} date={expireDate} name={name} />
                                                     </td>
                                                 </tr>
                                             );

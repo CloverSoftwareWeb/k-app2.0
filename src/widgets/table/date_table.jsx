@@ -38,21 +38,25 @@ export function DateTable({ title, data, loading, color, displayRow }) {
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["", "name", "cr no.", "expire", "mobile", "", ""].map((el) => (
-                      <Header el={el} />
+                    {["", "name", "cr no.", "expire", "mobile", "", ""].map((el, idx) => (
+                      // Header requires a unique key
+                      <Header key={`header-${idx}`} el={el} />
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {data?.slice(0, visibleRows).map(
-                    ({ name, crNo, expireDate, phoneNo }, key) => {
+                    ({ name, crNo, expireDate, phoneNo, id }, key) => {
                       const className = `py-3 px-5 ${key === data.length - 1
                         ? ""
                         : "border-b border-blue-gray-50"
                         }`;
 
+                      // Prefer document id for row key; fallback to index if id missing
+                      const rowKey = id ?? `${name ?? "row"}-${key}`;
+
                       return (
-                        <tr key={name}>
+                        <tr key={rowKey}>
                           <td className={className}>
                             <Cell entity={key + 1} />
                           </td>
@@ -83,7 +87,7 @@ export function DateTable({ title, data, loading, color, displayRow }) {
                             <CallTo phone={phoneNo} name={name} />
                           </td>
                           <td className={className}>
-                            <SmsTo phone={phoneNo} date={expireDate} />
+                            <SmsTo phone={phoneNo} date={expireDate} name={name} />
                           </td>
                         </tr>
                       );

@@ -48,7 +48,12 @@ export function DashboardNavbar() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
-    const result = await searchDocuments("name", searchQuery.toLocaleUpperCase());
+    const trimmedQuery = searchQuery.trim();
+    const isMobileSearch = /^\d+$/.test(trimmedQuery);
+    const searchField = isMobileSearch ? "phoneNo" : "name";
+    const searchValue = isMobileSearch ? trimmedQuery : trimmedQuery.toLocaleUpperCase();
+
+    const result = await searchDocuments(searchField, searchValue);
 
     if (result.success) {
       setSearchResults(result.data);
@@ -128,7 +133,10 @@ export function DashboardNavbar() {
                     className="p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
                     onClick={() => navigate(`/profile/${item.id}`)} // Navigate to a details page
                   >
-                    <Typography variant="small" className="text-gray-700">{item.name}</Typography>
+                    <Typography variant="small" className="font-semibold text-gray-800">{item.name}</Typography>
+                    <Typography variant="small" className="text-gray-500">
+                      CR: {item.crNo || "N/A"} | Mobile: {item.phoneNo || "N/A"}
+                    </Typography>
                   </div>
                 ))}
               </div>

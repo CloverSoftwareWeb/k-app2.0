@@ -38,7 +38,7 @@ export function Profile() {
     })
 
     return () => unsubscribe
-  }, [userId]);
+  }, []);
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
@@ -165,7 +165,7 @@ export function Profile() {
                       {userData?.phoneNo}
                     </Typography>
                     <CallTo phone={userData?.phoneNo} name={userData?.name} />
-                    <SmsTo phone={userData?.phoneNo} date={userData?.expireDate} />
+                    <SmsTo phone={userData?.phoneNo} date={userData?.expireDate} name={userData?.name} />
                   </>
                 ),
                 "CR Number": isEditing ? (
@@ -176,6 +176,16 @@ export function Profile() {
                   />
                 ) : (
                   userData?.crNo
+                ),
+                "Aadhar Number": isEditing ? (
+                  <Input
+                    value={updatedData.aadharNo || ""}
+                    onChange={(e) => handleChange("aadharNo", e.target.value)}
+                    onBlur={handleBlur}
+                    placeholder="Enter Aadhar number"
+                  />
+                ) : (
+                  userData?.aadharNo || "NA"
                 ),
                 "Card Registration": isEditing ? (
                   <Input
