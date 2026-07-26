@@ -25,8 +25,7 @@ import {
 import { useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
-import { Common } from "@/constant/strings";
+import { UserDataContext } from "../../context/UserDataContext";
 
 
 export function DashboardNavbar() {
@@ -41,27 +40,24 @@ export function DashboardNavbar() {
 
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
+  const { data: userData } = useContext(UserDataContext);
 
-  const { searchDocuments } = useFirestoreQuery(Common.collectionName.customerData);
-
-
-  const handleSearch = async () => {
+  const handleSearch = () => {
     if (!searchQuery.trim()) return;
 
     const trimmedQuery = searchQuery.trim();
     const isMobileSearch = /^\d+$/.test(trimmedQuery);
-    const searchField = isMobileSearch ? "phoneNo" : "name";
     const searchValue = isMobileSearch ? trimmedQuery : trimmedQuery.toLocaleUpperCase();
 
-    const result = await searchDocuments(searchField, searchValue);
+    const results = userData.filter((user) => {
+      if (isMobileSearch) {
+        return user.phoneNo?.includes(searchValue);
+      }
+      return user.name?.includes(searchValue);
+    });
 
-    if (result.success) {
-      setSearchResults(result.data);
-      setShowResults(true);
-    } else {
-      setSearchResults([]);
-      setShowResults(false);
-    }
+    setSearchResults(results);
+    setShowResults(true);
   };
 
   const handleSearchAbort = () => {
@@ -131,7 +127,9 @@ export function DashboardNavbar() {
                   <div
                     key={item.id}
                     className="p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
-                    onClick={() => navigate(`/profile/${item.id}`)} // Navigate to a details page
+                    onClick={() =>
+                      navigate(`/dashboard/profile/${item.id}`, { state: { user: item } })
+                    }
                   >
                     <Typography variant="small" className="font-semibold text-gray-800">{item.name}</Typography>
                     <Typography variant="small" className="text-gray-500">

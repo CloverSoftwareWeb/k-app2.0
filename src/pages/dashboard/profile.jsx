@@ -1,85 +1,139 @@
 import { Common } from "@/constant/strings";
-import { ProfileInfoCard } from "@/widgets/cards";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid"; // Added TrashIcon
-import {
-  Avatar,
-  Card,
-  CardBody,
-  Tooltip,
-  Typography,
-  Input,
-  Button
-} from "@material-tailwind/react";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { UserDataContext } from "@/context/UserDataContext";
 import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
+import { ProfileInfoCard } from "@/widgets/cards";
 import CallTo from "@/widgets/table/components/call_to";
 import SmsTo from "@/widgets/table/components/sms_to";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  Avatar,
+  Button,
+  Card,
+  CardBody,
+  Input,
+  Tooltip,
+  Typography,
+} from "@material-tailwind/react";
+import { useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 export function Profile() {
   const { userId } = useParams();
-  // collection name should be same as per user context 
-  const { getAllData, updateFieldById, deleteDocumentById } = useFirestoreQuery(Common.collectionName.customerData);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { data: cachedUsers, loading, updateUserInCache, removeUserFromCache } =
+    useContext(UserDataContext);
+  const { fetchDocumentById, updateFieldById, deleteDocumentById } = useFirestoreQuery(
+    Common.collectionName.customerData
+  );
 
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
   const [updatedData, setUpdatedData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
-
-  const navigate = useNavigate();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
     if (!userId) return;
 
-    const fetchUserData = async () => {
-      try {
-        const allUsers = await getAllData();
-        const user = allUsers.find(u => u.id === userId);
-        if (user) {
-          console.log("Fetched user data:", user);
-          setUserData(user);
-          setUpdatedData(user);
-        } else {
-          console.error("User not found:", userId);
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
+    const passedUser = location.state?.user;
+    if (passedUser?.id === userId) {
+      setUserData(passedUser);
+      setUpdatedData(passedUser);
+      setFetchError(null);
+      return;
+    }
+
+    const cachedUser = cachedUsers.find((user) => user.id === userId);
+    if (cachedUser) {
+      setUserData(cachedUser);
+      setUpdatedData(cachedUser);
+      setFetchError(null);
+      return;
+    }
+
+    if (loading) return;
+
+    let cancelled = false;
+
+    const loadUser = async () => {
+      const result = await fetchDocumentById(userId);
+      if (cancelled) return;
+
+      if (result.success) {
+        setUserData(result.data);
+        setUpdatedData(result.data);
+        setFetchError(null);
+      } else {
+        setUserData(null);
+        setFetchError(result.error || "User not found");
       }
     };
 
-    fetchUserData();
-  }, [userId]);
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, location.state, cachedUsers, loading]);
 
   const handleEdit = () => {
-    setIsEditing(!isEditing);
+    setIsEditing((prev) => !prev);
+    if (isEditing) {
+      setUpdatedData(userData);
+    }
   };
 
   const handleChange = (field, value) => {
     setUpdatedData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleBlur = () => {
-    setUserData(updatedData);
-    updateFieldById(userId, updatedData)
-    setIsEditing(false);
-  };
+  const handleSave = async () => {
+    setIsSaving(true);
+    const result = await updateFieldById(userId, updatedData);
+    setIsSaving(false);
 
-  // Delete confirmation handler
-  const handleDelete = () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this profile?");
-    if (confirmDelete) {
-      // Add delete logic here, e.g., call deleteDocumentById
-      deleteDocumentById(userId)
-        .then(() => {
-          navigate('/dashboard/manage')
-          setTimeout(() => {
-            alert("Profile deleted successfully! Please refresh now.");  
-          }, 1200)
-        })
-        .catch((error) => {
-          alert("Failed to delete profile! Please try again.");
-        });
+    if (result.success) {
+      setUserData(updatedData);
+      updateUserInCache(userId, updatedData);
+      setIsEditing(false);
+    } else {
+      alert(`Failed to save profile: ${result.error}`);
     }
   };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this profile?");
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    const result = await deleteDocumentById(userId);
+    setIsDeleting(false);
+
+    if (result.success) {
+      removeUserFromCache(userId);
+      navigate("/dashboard/manage");
+    } else {
+      alert(`Failed to delete profile: ${result.error}`);
+    }
+  };
+
+  if (loading && !userData) {
+    return (
+      <Typography variant="paragraph" color="blue-gray" className="mt-8 text-center">
+        Loading profile...
+      </Typography>
+    );
+  }
+
+  if (fetchError || !userData) {
+    return (
+      <Typography variant="paragraph" color="red" className="mt-8 text-center">
+        {fetchError || "User not found"}
+      </Typography>
+    );
+  }
 
   return (
     <>
@@ -105,7 +159,6 @@ export function Profile() {
                   <Input
                     value={updatedData.workType}
                     onChange={(e) => handleChange("workType", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   <Typography variant="small" className="font-normal text-blue-gray-600">
@@ -116,11 +169,16 @@ export function Profile() {
             </div>
             <div className="flex gap-4">
               <Tooltip content="Edit Profile">
-                <PencilIcon className="h-5 w-5 cursor-pointer text-blue-gray-500" onClick={handleEdit} />
+                <PencilIcon
+                  className="h-5 w-5 cursor-pointer text-blue-gray-500"
+                  onClick={handleEdit}
+                />
               </Tooltip>
-              {/* Delete Button */}
               <Tooltip content="Delete Profile">
-                <TrashIcon className="h-5 w-5 cursor-pointer text-red-500" onClick={handleDelete} />
+                <TrashIcon
+                  className={`h-5 w-5 cursor-pointer text-red-500 ${isDeleting ? "opacity-50 pointer-events-none" : ""}`}
+                  onClick={handleDelete}
+                />
               </Tooltip>
             </div>
           </div>
@@ -133,7 +191,6 @@ export function Profile() {
                   <Input
                     value={updatedData.address}
                     onChange={(e) => handleChange("address", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.address ?? ""
@@ -144,7 +201,6 @@ export function Profile() {
                   <Input
                     value={updatedData.name}
                     onChange={(e) => handleChange("name", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.name
@@ -153,24 +209,18 @@ export function Profile() {
                   <Input
                     value={updatedData.dob}
                     onChange={(e) => handleChange("dob", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.dob
                 ),
-                "Mobile": isEditing ? (
+                Mobile: isEditing ? (
                   <Input
                     value={updatedData.phoneNo}
                     onChange={(e) => handleChange("phoneNo", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   <>
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="font-medium"
-                    >
+                    <Typography variant="small" color="blue-gray" className="font-medium">
                       {userData?.phoneNo}
                     </Typography>
                     <CallTo phone={userData?.phoneNo} name={userData?.name} />
@@ -181,7 +231,6 @@ export function Profile() {
                   <Input
                     value={updatedData.crNo}
                     onChange={(e) => handleChange("crNo", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.crNo
@@ -190,7 +239,6 @@ export function Profile() {
                   <Input
                     value={updatedData.aadharNo || ""}
                     onChange={(e) => handleChange("aadharNo", e.target.value)}
-                    onBlur={handleBlur}
                     placeholder="Enter Aadhar number"
                   />
                 ) : (
@@ -200,7 +248,6 @@ export function Profile() {
                   <Input
                     value={updatedData.regDate}
                     onChange={(e) => handleChange("regDate", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.regDate
@@ -209,7 +256,6 @@ export function Profile() {
                   <Input
                     value={updatedData.renewDate}
                     onChange={(e) => handleChange("renewDate", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.renewDate
@@ -218,7 +264,6 @@ export function Profile() {
                   <Input
                     value={updatedData.expireDate}
                     onChange={(e) => handleChange("expireDate", e.target.value)}
-                    onBlur={handleBlur}
                   />
                 ) : (
                   userData?.expireDate
@@ -228,8 +273,13 @@ export function Profile() {
           </div>
 
           {isEditing && (
-            <div className="flex justify-end">
-              <Button color="blue" onClick={handleBlur}>Save</Button>
+            <div className="flex justify-end gap-2">
+              <Button variant="outlined" color="gray" onClick={handleEdit}>
+                Cancel
+              </Button>
+              <Button color="blue" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
             </div>
           )}
         </CardBody>

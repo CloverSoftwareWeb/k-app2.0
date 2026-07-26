@@ -48,8 +48,7 @@ export function Notifications() {
     const res = await addNewDocument(payload);
     if (res.success) {
       setText("");
-      // reload list
-      await loadTodos();
+      setTodos((curr) => [{ id: res.id, ...payload }, ...curr]);
     } else {
       console.error("Add todo failed", res.error);
     }

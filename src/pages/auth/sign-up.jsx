@@ -6,10 +6,11 @@ import {
   Option
 } from "@material-tailwind/react";
 import { Link } from "react-router-dom";
-import { useReducer, useState } from "react";
+import { useReducer, useState, useContext } from "react";
 import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
 import { Common } from "@/constant/strings";
 import { useNavigate } from "react-router-dom";
+import { UserDataContext } from "@/context/UserDataContext";
 
 // Get today's date in YYYY-MM-DD format
 const getCurrentDate = () => new Date().toISOString().substring(0, 10);
@@ -45,16 +46,28 @@ export function SignUp() {
   
   const workOptions = ["Mestri", "Labour", "Electrician", "Fisher Man", "Painter", "Carpenter", "Plumber", "Other"];
   const [state, dispatch] = useReducer(formReducer, initialState);
-  const { addNewDocument } = useFirestoreQuery(Common.collectionName.customerData)
+  const { addNewDocument } = useFirestoreQuery(Common.collectionName.customerData);
+  const { addUserToCache } = useContext(UserDataContext);
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   // Handle form submission
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    addNewDocument(state);
-    dispatch({ type: "RESET" })
-    navigate("/dashboard/manage");
+    setIsSubmitting(true);
+
+    const result = await addNewDocument(state);
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      addUserToCache({ id: result.id, ...state });
+      dispatch({ type: "RESET" });
+      navigate("/dashboard/manage");
+    } else {
+      alert(`Failed to register member: ${result.error}`);
+    }
   };
 
   // Handle input change
@@ -149,7 +162,9 @@ export function SignUp() {
         </div>
 
         {/* Submit & Reset Buttons */}
-        <Button type="submit" className="mt-6" fullWidth>Register Now</Button>
+        <Button type="submit" className="mt-6" fullWidth disabled={isSubmitting}>
+          {isSubmitting ? "Registering..." : "Register Now"}
+        </Button>
         <Button type="button" className="mt-2 bg-red-500" fullWidth onClick={resetForm}>
           Reset Form
         </Button>

@@ -22,8 +22,8 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
     setVisibleRows(data?.length);
   };
 
-  const goToProfile = ({ userId }) => {
-    navigate(`/dashboard/profile/${userId}`);
+  const goToProfile = (user) => {
+    navigate(`/dashboard/profile/${user.id}`, { state: { user } });
   };
 
   return (
@@ -47,7 +47,8 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
                 </thead>
                 <tbody>
                   {data.slice(0, visibleRows).map(
-                    ({ name, crNo, expireDate, phoneNo, id }, key) => {
+                    (user, key) => {
+                      const { name, crNo, expireDate, phoneNo, id } = user;
                       const className = `py-3 px-5 ${key === data.length - 1
                         ? ""
                         : "border-b border-blue-gray-50"
@@ -87,7 +88,7 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
                               href="#"
                               className="text-xs font-semibold text-blue-gray-600"
                             >
-                              <Button variant="text" onClick={() => goToProfile({ userId: id })} >
+                              <Button variant="text" onClick={() => goToProfile(user)} >
                                 Profile
                               </Button>
                             </Typography>
