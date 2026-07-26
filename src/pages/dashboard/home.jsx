@@ -2,11 +2,16 @@ import { StatisticsCard } from "@/widgets/cards";
 import {
   ArrowUpIcon
 } from "@heroicons/react/24/outline";
-import { ChatBubbleLeftIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/solid";
+import { ChatBubbleLeftIcon, DevicePhoneMobileIcon, PrinterIcon } from "@heroicons/react/24/solid";
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
+  Menu,
+  MenuHandler,
+  MenuItem,
+  MenuList,
   Typography
 } from "@material-tailwind/react";
 import React, { useContext, useMemo } from "react";
@@ -14,6 +19,10 @@ import { CallHistoryContext } from "../../context/CallHistoryContext";
 import { MessageHistoryContext } from "../../context/MessageHistoryContext";
 import { StatisticsContext } from '../../context/StatisticsContext';
 import { UserDataContext } from "../../context/UserDataContext";
+import {
+  printFunctionMatrixDetailed,
+  printFunctionMatrixSummary,
+} from "../../utils/printTable";
 
 function HistoryTimeline({ data, icon: Icon, emptyLabel }) {
   if (data.length === 0) {
@@ -127,9 +136,30 @@ export function Home() {
           >
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-1">
-                Function metrix
+                Function Matrix
               </Typography>
             </div>
+            <Menu placement="bottom-end">
+              <MenuHandler>
+                <Button
+                  size="sm"
+                  variant="outlined"
+                  color="blue-gray"
+                  className="flex items-center gap-2"
+                >
+                  <PrinterIcon className="h-4 w-4" />
+                  Print
+                </Button>
+              </MenuHandler>
+              <MenuList>
+                <MenuItem onClick={() => printFunctionMatrixSummary(roleCounts)}>
+                  Print Summary
+                </MenuItem>
+                <MenuItem onClick={() => printFunctionMatrixDetailed(roleCounts, userData)}>
+                  Print Detailed Report
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </CardHeader>
           <CardBody className="overflow-x-auto px-2 pt-0 pb-2">
             <table className="w-full min-w-[480px] table-auto">
