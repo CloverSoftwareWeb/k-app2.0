@@ -9,8 +9,8 @@ import {
   onSnapshot,
   orderBy,
   query,
+  setDoc,
   startAt,
-  updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -85,8 +85,8 @@ export const useFirestoreQuery = (collectionName: string) => {
   const updateFieldById = async (docId: string, updatedData: Record<string, unknown>) => {
     try {
       const docRef = doc(db, collectionName, docId);
-      await updateDoc(docRef, stripDocumentId(updatedData));
-      return { success: true, message: 'Document updated successfully' };
+      await setDoc(docRef, stripDocumentId(updatedData), { merge: true });
+      return { success: true, message: 'Document saved successfully' };
     } catch (err) {
       return { success: false, error: err.message };
     }
