@@ -6,11 +6,10 @@ import {
   Option
 } from "@material-tailwind/react";
 import { Link } from "react-router-dom";
-import { useReducer, useState, useContext } from "react";
+import { useReducer, useState, useRef } from "react";
 import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
 import { Common } from "@/constant/strings";
 import { useNavigate } from "react-router-dom";
-import { UserDataContext } from "@/context/UserDataContext";
 
 // Get today's date in YYYY-MM-DD format
 const getCurrentDate = () => new Date().toISOString().substring(0, 10);
@@ -46,27 +45,43 @@ export function SignUp() {
   
   const workOptions = ["Mestri", "Labour", "Electrician", "Fisher Man", "Painter", "Carpenter", "Plumber", "Other"];
   const [state, dispatch] = useReducer(formReducer, initialState);
-  const { addNewDocument } = useFirestoreQuery(Common.collectionName.customerData);
-  const { addUserToCache } = useContext(UserDataContext);
+  const { addNewDocument, findDocumentsByField } = useFirestoreQuery(Common.collectionName.customerData);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
 
   // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
 
-    const result = await addNewDocument(state);
+    try {
+      const existing = await findDocumentsByField("crNo", state.crNo);
+      if (!existing.success) {
+        alert(`Failed to check existing members: ${existing.error}`);
+        return;
+      }
 
-    setIsSubmitting(false);
+      if (existing.data.length > 0) {
+        alert("A member with this CR number is already registered.");
+        return;
+      }
 
-    if (result.success) {
-      addUserToCache({ id: result.id, ...state });
-      dispatch({ type: "RESET" });
-      navigate("/dashboard/manage");
-    } else {
-      alert(`Failed to register member: ${result.error}`);
+      const result = await addNewDocument(state);
+
+      if (result.success) {
+        dispatch({ type: "RESET" });
+        navigate("/dashboard/manage");
+      } else {
+        alert(`Failed to register member: ${result.error}`);
+      }
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 

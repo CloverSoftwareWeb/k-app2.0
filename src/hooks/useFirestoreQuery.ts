@@ -9,8 +9,9 @@ import {
   onSnapshot,
   orderBy,
   query,
-  setDoc,
   startAt,
+  updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -32,9 +33,34 @@ export const useFirestoreQuery = (collectionName: string) => {
   const getAllData = async () => {
     const snapshot = await getDocs(collection(db, collectionName));
     return snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
       ...docSnap.data(),
+      id: docSnap.id,
     }));
+  };
+
+  const subscribeToCollection = (
+    callback: (result: { success: boolean; data?: Record<string, unknown>[]; error?: string }) => void
+  ) => {
+    const safeCallback = typeof callback === 'function' ? callback : () => {};
+
+    try {
+      return onSnapshot(
+        collection(db, collectionName),
+        (snapshot) => {
+          safeCallback({
+            success: true,
+            data: snapshot.docs.map((docSnap) => ({
+              ...docSnap.data(),
+              id: docSnap.id,
+            })),
+          });
+        },
+        (error) => safeCallback({ success: false, error: error.message })
+      );
+    } catch (err) {
+      safeCallback({ success: false, error: err?.message || String(err) });
+      return () => {};
+    }
   };
 
   const fetchDocumentById = async (docId: string) => {
@@ -48,7 +74,24 @@ export const useFirestoreQuery = (collectionName: string) => {
 
       return {
         success: true,
-        data: { id: snapshot.id, ...snapshot.data() },
+        data: { ...snapshot.data(), id: snapshot.id },
+      };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const findDocumentsByField = async (fieldName: string, value: unknown) => {
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, collectionName), where(fieldName, '==', value))
+      );
+      return {
+        success: true,
+        data: snapshot.docs.map((docSnap) => ({
+          ...docSnap.data(),
+          id: docSnap.id,
+        })),
       };
     } catch (err) {
       return { success: false, error: err.message };
@@ -65,7 +108,7 @@ export const useFirestoreQuery = (collectionName: string) => {
         docRef,
         (snapshot) => {
           if (snapshot.exists()) {
-            safeCallback({ success: true, data: { id: snapshot.id, ...snapshot.data() } });
+            safeCallback({ success: true, data: { ...snapshot.data(), id: snapshot.id } });
           } else {
             safeCallback({ success: false, error: 'Document not found' });
           }
@@ -85,8 +128,8 @@ export const useFirestoreQuery = (collectionName: string) => {
   const updateFieldById = async (docId: string, updatedData: Record<string, unknown>) => {
     try {
       const docRef = doc(db, collectionName, docId);
-      await setDoc(docRef, stripDocumentId(updatedData), { merge: true });
-      return { success: true, message: 'Document saved successfully' };
+      await updateDoc(docRef, stripDocumentId(updatedData));
+      return { success: true, message: 'Document updated successfully' };
     } catch (err) {
       return { success: false, error: err.message };
     }
@@ -102,8 +145,8 @@ export const useFirestoreQuery = (collectionName: string) => {
       );
       const snapshot = await getDocs(q);
       const results = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
         ...docSnap.data(),
+        id: docSnap.id,
       }));
 
       return { success: true, data: results };
@@ -125,7 +168,9 @@ export const useFirestoreQuery = (collectionName: string) => {
   return {
     addNewDocument,
     getAllData,
+    subscribeToCollection,
     fetchDocumentById,
+    findDocumentsByField,
     getDocumentById,
     updateFieldById,
     searchDocuments,

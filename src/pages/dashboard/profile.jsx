@@ -1,5 +1,4 @@
 import { Common } from "@/constant/strings";
-import { UserDataContext } from "@/context/UserDataContext";
 import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
 import { ProfileInfoCard } from "@/widgets/cards";
 import CallTo from "@/widgets/table/components/call_to";
@@ -14,16 +13,13 @@ import {
   Tooltip,
   Typography,
 } from "@material-tailwind/react";
-import { useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export function Profile() {
   const { userId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
-  const { data: cachedUsers, loading, updateUserInCache, removeUserFromCache } =
-    useContext(UserDataContext);
-  const { fetchDocumentById, updateFieldById, deleteDocumentById } = useFirestoreQuery(
+  const { getDocumentById, updateFieldById, deleteDocumentById } = useFirestoreQuery(
     Common.collectionName.customerData
   );
 
@@ -32,35 +28,19 @@ export function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
-    if (!userId) return;
-
-    const passedUser = location.state?.user;
-    if (passedUser?.id === userId) {
-      setUserData(passedUser);
-      setUpdatedData(passedUser);
-      setFetchError(null);
+    if (!userId) {
+      setIsLoadingProfile(false);
+      setFetchError("User not found");
       return;
     }
 
-    const cachedUser = cachedUsers.find((user) => user.id === userId);
-    if (cachedUser) {
-      setUserData(cachedUser);
-      setUpdatedData(cachedUser);
-      setFetchError(null);
-      return;
-    }
-
-    if (loading) return;
-
-    let cancelled = false;
-
-    const loadUser = async () => {
-      const result = await fetchDocumentById(userId);
-      if (cancelled) return;
-
+    setIsLoadingProfile(true);
+    const unsubscribe = getDocumentById(userId, (result) => {
       if (result.success) {
         setUserData(result.data);
         setUpdatedData(result.data);
@@ -69,14 +49,11 @@ export function Profile() {
         setUserData(null);
         setFetchError(result.error || "User not found");
       }
-    };
+      setIsLoadingProfile(false);
+    });
 
-    loadUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, location.state, cachedUsers, loading]);
+    return unsubscribe;
+  }, [userId]);
 
   const handleEdit = () => {
     setIsEditing((prev) => !prev);
@@ -90,16 +67,21 @@ export function Profile() {
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    const result = await updateFieldById(userId, updatedData);
-    setIsSaving(false);
+    if (isSavingRef.current) return;
 
-    if (result.success) {
-      setUserData(updatedData);
-      updateUserInCache(userId, updatedData);
-      setIsEditing(false);
-    } else {
-      alert(`Failed to save profile: ${result.error}`);
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      const result = await updateFieldById(userId, updatedData);
+
+      if (result.success) {
+        setIsEditing(false);
+      } else {
+        alert(`Failed to save profile: ${result.error}`);
+      }
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -112,14 +94,13 @@ export function Profile() {
     setIsDeleting(false);
 
     if (result.success) {
-      removeUserFromCache(userId);
       navigate("/dashboard/manage");
     } else {
       alert(`Failed to delete profile: ${result.error}`);
     }
   };
 
-  if (loading && !userData) {
+  if (isLoadingProfile) {
     return (
       <Typography variant="paragraph" color="blue-gray" className="mt-8 text-center">
         Loading profile...
