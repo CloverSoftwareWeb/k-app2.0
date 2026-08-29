@@ -3,7 +3,7 @@ import { useFirestoreQuery } from "@/hooks/useFirestoreQuery";
 import { ProfileInfoCard } from "@/widgets/cards";
 import CallTo from "@/widgets/table/components/call_to";
 import SmsTo from "@/widgets/table/components/sms_to";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, StarIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   Avatar,
   Button,
@@ -85,6 +85,22 @@ export function Profile() {
     }
   };
 
+  const handleToggleVip = async () => {
+    if (isSavingRef.current) return;
+
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      const result = await updateFieldById(userId, { isVip: !userData.isVip });
+      if (!result.success) {
+        alert(`Failed to update VIP status: ${result.error}`);
+      }
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
+    }
+  };
+
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this profile?");
     if (!confirmDelete) return;
@@ -149,6 +165,12 @@ export function Profile() {
               </div>
             </div>
             <div className="flex gap-4">
+              <Tooltip content={userData?.isVip ? "Remove VIP" : "Mark as VIP"}>
+                <StarIcon
+                  className={`h-5 w-5 cursor-pointer ${userData?.isVip ? "text-amber-500" : "text-blue-gray-400"} ${isSaving ? "pointer-events-none opacity-50" : ""}`}
+                  onClick={handleToggleVip}
+                />
+              </Tooltip>
               <Tooltip content="Edit Profile">
                 <PencilIcon
                   className="h-5 w-5 cursor-pointer text-blue-gray-500"

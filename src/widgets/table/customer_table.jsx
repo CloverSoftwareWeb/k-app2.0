@@ -7,16 +7,22 @@ import {
   Button
 } from "@material-tailwind/react";
 import Loader from './components/loader'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Cell from "./components/cell";
 import Header from "./components/header"
 import ShowMore from "./components/show_more";
 import { useNavigate } from "react-router-dom";
+import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
+import { StarIcon } from "@heroicons/react/24/solid";
 
 
-export function CustomerTable({ title, data, loading, color, displayRow }) {
+export function CustomerTable({ title, data, loading, color, displayRow, onToggleVip, togglingVipIds = [] }) {
   const [visibleRows, setVisibleRows] = useState(displayRow);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setVisibleRows(displayRow);
+  }, [displayRow]);
 
   const handleShowMore = () => {
     setVisibleRows(data?.length);
@@ -40,7 +46,7 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
               <table className="w-full min-w-[640px] table-auto">
                 <thead>
                   <tr>
-                    {["sl", "name", "cr no.", "card expire", "mobile", ""].map((el) => (
+                    {["sl", "name", "cr no.", "card expire", "mobile", "vip", ""].map((el) => (
                       <Header key={el} el={el} />
                     ))}
                   </tr>
@@ -48,7 +54,8 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
                 <tbody>
                   {data.slice(0, visibleRows).map(
                     (user, key) => {
-                      const { name, crNo, expireDate, phoneNo, id } = user;
+                      const { name, crNo, expireDate, phoneNo, id, isVip } = user;
+                      const isTogglingVip = togglingVipIds.includes(id);
                       const className = `py-3 px-5 ${key === data.length - 1
                         ? ""
                         : "border-b border-blue-gray-50"
@@ -81,6 +88,19 @@ export function CustomerTable({ title, data, loading, color, displayRow }) {
                           </td>
                           <td className={className}>
                             <Cell entity={phoneNo} />
+                          </td>
+                          <td className={className}>
+                            {onToggleVip && (
+                              <Button
+                                variant="text"
+                                className="p-1"
+                                disabled={isTogglingVip}
+                                onClick={() => onToggleVip(user)}
+                                title={isVip ? "Remove VIP" : "Mark as VIP"}
+                              >
+                                {isVip ? <StarIcon className="h-5 w-5 text-amber-500" /> : <StarOutlineIcon className="h-5 w-5 text-blue-gray-400" />}
+                              </Button>
+                            )}
                           </td>
                           <td className={className}>
                             <Typography

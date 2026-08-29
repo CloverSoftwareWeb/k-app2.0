@@ -176,13 +176,13 @@ export function DashboardNavbar() {
               </div>
             </MenuHandler>
             <MenuList className="w-max border-0">
-                <MenuItem className="flex items-center gap-3" onClick={() => navigate('/todo')}>
+                <MenuItem className="flex items-center gap-3" onClick={() => navigate('/dashboard/vip-members')}>
                   <Typography
                     variant="small"
                     color="blue-gray"
                     className="mb-1 font-normal"
                   >
-                    My TODO
+                    VIP Members
                   </Typography>
                 </MenuItem>
                 <hr />

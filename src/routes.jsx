@@ -2,12 +2,12 @@ import {
   HomeIcon,
   UserCircleIcon,
   TableCellsIcon,
-  InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
-  CommandLineIcon
+  CommandLineIcon,
+  StarIcon
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, Manage } from "@/pages/dashboard";
+import { Home, Profile, Tables, VipMembers, Manage } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -43,10 +43,10 @@ export const routes = [
         element: <Manage />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "todo",
-        path: "/todo",
-        element: <Notifications />,
+        icon: <StarIcon {...icon} />,
+        name: "VIP members",
+        path: "/vip-members",
+        element: <VipMembers />,
       },
     ],
   },
