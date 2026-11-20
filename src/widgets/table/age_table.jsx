@@ -18,6 +18,7 @@ import SmsTo from "./components/sms_to";
 export function AgeTable({ title, data, loading, color }) {
 
     const { calculateAge } = useDate();
+    const totalCount = data?.length ?? 0;
 
     // State to manage how many rows to show initially
     const [visibleRows, setVisibleRows] = useState(3);
@@ -32,9 +33,14 @@ export function AgeTable({ title, data, loading, color }) {
         <div className="mt-12 mb-8 flex flex-col gap-12">
             <Card>
                 <CardHeader variant="gradient" color={color} className="mb-8 p-6 opacity-90">
-                    <Typography variant="h6" color="white">
-                        {title}
-                    </Typography>
+                    <div className="flex items-center justify-between gap-4">
+                        <Typography variant="h6" color="white">
+                            {title}
+                        </Typography>
+                        <Typography variant="small" color="white" className="font-medium">
+                            Total: {totalCount}
+                        </Typography>
+                    </div>
                 </CardHeader>
                 <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
                     {loading ? <Loader />
