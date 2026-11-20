@@ -9,6 +9,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  setDoc,
   startAt,
   updateDoc,
   where,
@@ -25,6 +26,15 @@ export const useFirestoreQuery = (collectionName: string) => {
     try {
       const docRef = await addDoc(collection(db, collectionName), { ...newData });
       return { success: true, id: docRef.id, message: 'added new data' };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const setDocumentById = async (docId: string, newData: Record<string, unknown>) => {
+    try {
+      await setDoc(doc(db, collectionName, docId), stripDocumentId(newData), { merge: true });
+      return { success: true, id: docId, message: 'Document saved successfully' };
     } catch (err) {
       return { success: false, error: err.message };
     }
@@ -167,6 +177,7 @@ export const useFirestoreQuery = (collectionName: string) => {
 
   return {
     addNewDocument,
+    setDocumentById,
     getAllData,
     subscribeToCollection,
     fetchDocumentById,

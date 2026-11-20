@@ -1,9 +1,7 @@
 import {
   Input,
   Button,
-  Typography,
-  Select,
-  Option
+  Typography
 } from "@material-tailwind/react";
 import { Link } from "react-router-dom";
 import { useEffect, useReducer, useRef, useState } from "react";
@@ -13,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 
 // Get today's date in YYYY-MM-DD format
 const getCurrentDate = () => new Date().toISOString().substring(0, 10);
+const normalizeWorkType = (workType) => workType.trim().toUpperCase();
+const getWorkTypeId = (workType) => encodeURIComponent(normalizeWorkType(workType));
 
 // Initial state
 const initialState = {
@@ -44,10 +44,9 @@ const formReducer = (state, action) => {
 export function SignUp() {
   const [useCustomWorkType, setUseCustomWorkType] = useState(false);
   const [savedWorkTypes, setSavedWorkTypes] = useState([]);
-  const defaultWorkTypes = ["Mestri", "Labour", "Electrician", "Fisher Man", "Painter", "Carpenter", "Plumber"];
   const [state, dispatch] = useReducer(formReducer, initialState);
   const { addNewDocument, findDocumentsByField } = useFirestoreQuery(Common.collectionName.customerData);
-  const { addNewDocument: addWorkType, getAllData: getAllWorkTypes } = useFirestoreQuery(Common.collectionName.workTypes);
+  const { getAllData: getAllWorkTypes, setDocumentById: setWorkType } = useFirestoreQuery(Common.collectionName.workTypes);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -56,11 +55,13 @@ export function SignUp() {
     const loadSavedWorkTypes = async () => {
       try {
         const workTypes = await getAllWorkTypes();
-        setSavedWorkTypes(
-          workTypes
-            .map(({ name }) => typeof name === "string" ? name.trim() : "")
-            .filter(Boolean)
-        );
+        const uniqueWorkTypes = new Map();
+        workTypes.forEach(({ name }) => {
+          if (typeof name === "string" && name.trim()) {
+            uniqueWorkTypes.set(normalizeWorkType(name), name.trim());
+          }
+        });
+        setSavedWorkTypes([...uniqueWorkTypes.values()].sort());
       } catch (error) {
         // Registration still works if the optional work-type list cannot be loaded.
         console.error("Unable to load saved work types", error);
@@ -70,7 +71,7 @@ export function SignUp() {
     loadSavedWorkTypes();
   }, []);
 
-  const workOptions = [...new Set([...defaultWorkTypes, ...savedWorkTypes])];
+  const workOptions = savedWorkTypes;
 
 
   // Handle form submission
@@ -106,15 +107,14 @@ export function SignUp() {
 
       if (result.success) {
         if (useCustomWorkType) {
-          const alreadySaved = savedWorkTypes.some(
-            (savedWorkType) => savedWorkType.toUpperCase() === workType.toUpperCase()
+          const workTypeAlreadyExists = savedWorkTypes.some(
+            (savedWorkType) => normalizeWorkType(savedWorkType) === normalizeWorkType(workType)
           );
 
-          if (!alreadySaved) {
-            const savedResult = await addWorkType({
+          if (!workTypeAlreadyExists) {
+            const savedResult = await setWorkType(getWorkTypeId(workType), {
               name: workType,
-              normalizedName: workType.toUpperCase(),
-              createdAt: new Date().toISOString(),
+              normalizedName: normalizeWorkType(workType),
             });
 
             if (!savedResult.success) {
@@ -184,21 +184,25 @@ export function SignUp() {
 
           {/* Work */}
           <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Work</Typography>
-          <Select
+          <select
             value={useCustomWorkType ? "Other" : state.workType}
-            onChange={(value) => {
-              setUseCustomWorkType(value === "Other");
-              dispatch({ type: "UPDATE_FIELD", field: "workType", value: value === "Other" ? "" : value });
-              if (value !== "Other") {
+            onChange={(event) => {
+              const selectedWorkType = event.target.value;
+              setUseCustomWorkType(selectedWorkType === "Other");
+              dispatch({ type: "UPDATE_FIELD", field: "workType", value: selectedWorkType === "Other" ? "" : selectedWorkType });
+              if (selectedWorkType !== "Other") {
                 dispatch({ type: "UPDATE_FIELD", field: "customWorkType", value: "" });
               }
             }}
+            className="w-full rounded-lg border border-blue-gray-200 bg-transparent px-3 py-2.5 text-sm text-blue-gray-700 outline-none transition focus:border-gray-900"
+            required
           >
+            <option value="" disabled>Select work type</option>
             {workOptions.map((option) => (
-              <Option key={option} value={option}>{option}</Option>
+              <option key={option} value={option}>{option}</option>
             ))}
-            <Option value="Other">Other</Option>
-          </Select>
+            <option value="Other">Other</option>
+          </select>
           {useCustomWorkType && (
             <Input
               type="text"
