@@ -1,6 +1,7 @@
 const Common = {
     collectionName: {
         customerData: 'customer-data',
+        workTypes: 'work-types',
         statistics: "statistics",
         testCustomerData: 'test-customer-data',
         callHistory: 'callHistory',
